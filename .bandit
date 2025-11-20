@@ -1,0 +1,45 @@
+# Bandit configuration for security scanning
+# https://bandit.readthedocs.io/en/latest/config.html
+
+# Exclude directories from scanning
+exclude_dirs:
+  - '.venv'
+  - 'venv'
+  - '.git'
+  - '__pycache__'
+  - '.pytest_cache'
+  - 'htmlcov'
+  - 'build'
+  - 'dist'
+  - '.mypy_cache'
+
+# Tests that are allowed in test files
+tests:
+  - B601  # paramiko_calls
+  - B602  # subprocess_popen_with_shell_equals_true
+  - B603  # subprocess_without_shell_equals_true
+  - B607  # start_process_with_partial_path
+
+# Skip these tests in test files
+skips:
+  - B101  # assert_used - common in tests
+  - B106  # hardcoded_password_funcarg - test fixtures often use mock credentials
+  - B201  # flask_debug_true - development configuration in tests
+
+# Confidence levels: HIGH, MEDIUM, LOW
+confidence: MEDIUM
+
+# Severity levels: HIGH, MEDIUM, LOW
+severity: MEDIUM
+
+# Format output
+format: json
+
+# Recursive scan
+recursive: true
+
+# Include source lines in report
+include_source: true
+
+# Number of context lines to include
+context_lines: 3

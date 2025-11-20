@@ -1,0 +1,239 @@
+name: CI Pipeline
+
+on:
+  # Trigger on pull requests to main
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.editorconfig'
+      - 'docs/**'
+
+  # Trigger on pushes to feature branches
+  push:
+    branches:
+      - 'features/**'
+      - 'feature/**'
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.editorconfig'
+      - 'docs/**'
+
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Test type to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'unit'
+          - 'integration'
+          - 'no-tests'
+
+# Cancel previous runs for same branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Permissions for GitHub Actions
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+env:
+  # CI environment variables
+  CI: true
+  ENVIRONMENT: ci
+  # Python configuration
+  PYTHONUNBUFFERED: 1
+  PYTHONDONTWRITEBYTECODE: 1
+
+jobs:
+  ci:
+    name: CI Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    outputs:
+      test-type: ${{ steps.test-config.outputs.test-type }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history for accurate coverage reports
+          fetch-depth: 0
+
+      - name: Configure test parameters
+        id: test-config
+        run: |
+          # Use manual input if provided, otherwise default to 'all'
+          TEST_TYPE="${{ github.event.inputs.test_type || 'all' }}"
+
+          # Optimize for draft PRs (run only unit tests)
+          if [[ "${{ github.event.pull_request.draft }}" == "true" ]]; then
+            TEST_TYPE="unit"
+            echo "Draft PR detected - running unit tests only for faster feedback"
+          fi
+
+          echo "test-type=${TEST_TYPE}" >> $GITHUB_OUTPUT
+          echo "Test type: ${TEST_TYPE}"
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: |
+          echo "Installing Python dependencies with UV..."
+          uv sync --extra dev
+          echo "Dependencies installed successfully"
+
+      - name: Run formatters check
+        run: |
+          echo "Checking code formatting..."
+          uv run python -m black --check src/attack_hierarchy/ tests/
+
+      - name: Run import sorting check
+        run: |
+          echo "Checking import sorting..."
+          uv run python -m isort --check src/attack_hierarchy/ tests/
+
+      - name: Run type checking
+        run: |
+          echo "Running type checking with MyPy..."
+          uv run python -m mypy src/attack_hierarchy/
+          uv run python -m mypy tests/ || true
+
+      - name: Run linting
+        run: |
+          echo "Running linting with Pylint..."
+          uv run python -m pylint --rcfile=.pylintrc src/attack_hierarchy/
+          uv run python -m pylint --rcfile=.pylintrc-tests tests/
+
+      - name: Run security scan
+        run: |
+          echo "Running security scan with Bandit..."
+          uv run python -m bandit -c .bandit -r src/attack_hierarchy/ -f json -o bandit-report.json --severity-level medium || \
+          uv run python -m bandit -c .bandit -r src/attack_hierarchy/ --severity-level medium
+
+      - name: Download test fixtures
+        if: steps.test-config.outputs.test-type != 'no-tests' && steps.test-config.outputs.test-type != 'unit'
+        run: |
+          echo "Downloading enterprise-attack.json test fixture..."
+          make download-fixtures
+
+      - name: Run tests
+        if: steps.test-config.outputs.test-type != 'no-tests'
+        run: |
+          echo "Running tests..."
+          case "${{ steps.test-config.outputs.test-type }}" in
+            "unit")
+              uv run python -m pytest tests/unit/ -v
+              ;;
+            "integration")
+              uv run python -m pytest tests/integration/ -v
+              ;;
+            *)
+              uv run python -m pytest -v
+              ;;
+          esac
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            htmlcov/
+            .coverage
+            pytest-results.xml
+            bandit-report.json
+          retention-days: 7
+
+      - name: Add test results to summary
+        if: always() && (steps.test-config.outputs.test-type == 'all' || steps.test-config.outputs.test-type == 'unit' || steps.test-config.outputs.test-type == 'integration')
+        run: |
+          echo "### Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ -f pytest-results.xml ]]; then
+            # Parse test results from JUnit XML
+            TEST_COUNT=$(grep -oP 'tests="\K\d+' pytest-results.xml | head -1)
+            FAILURE_COUNT=$(grep -oP 'failures="\K\d+' pytest-results.xml | head -1)
+            ERROR_COUNT=$(grep -oP 'errors="\K\d+' pytest-results.xml | head -1)
+            SKIPPED_COUNT=$(grep -oP 'skipped="\K\d+' pytest-results.xml | head -1)
+
+            # Calculate passed tests
+            PASSED_COUNT=$((TEST_COUNT - FAILURE_COUNT - ERROR_COUNT - SKIPPED_COUNT))
+
+            echo "**Total Tests:** ${TEST_COUNT}" >> $GITHUB_STEP_SUMMARY
+            echo "**Passed:** ${PASSED_COUNT}" >> $GITHUB_STEP_SUMMARY
+            echo "**Failed:** ${FAILURE_COUNT}" >> $GITHUB_STEP_SUMMARY
+            echo "**Errors:** ${ERROR_COUNT}" >> $GITHUB_STEP_SUMMARY
+            echo "**Skipped:** ${SKIPPED_COUNT}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            if [[ $FAILURE_COUNT -gt 0 || $ERROR_COUNT -gt 0 ]]; then
+              echo "**Some tests failed. Check the test artifacts for details.**" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "**All tests passed!**" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "Test results file not found" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+      - name: Generate job summary
+        if: always()
+        run: |
+          echo "## CI Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Test type information
+          echo "**Test Type:** ${{ steps.test-config.outputs.test-type }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Python Version:** 3.13" >> $GITHUB_STEP_SUMMARY
+          echo "**Runner:** ubuntu-latest" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Job status
+          if [[ "${{ job.status }}" == "success" ]]; then
+            echo "**Status:** All checks passed!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Status:** Some checks failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Coverage information (if tests were run)
+          if [[ "${{ steps.test-config.outputs.test-type }}" != "no-tests" ]] && [[ -f .coverage ]]; then
+            echo "### Coverage Report" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            # Try to get coverage percentage
+            if command -v uv &> /dev/null; then
+              COVERAGE_PERCENT=$(uv run python -m coverage report --format=total 2>/dev/null || echo "N/A")
+              if [[ "$COVERAGE_PERCENT" != "N/A" ]]; then
+                echo "Current coverage: **${COVERAGE_PERCENT}%**" >> $GITHUB_STEP_SUMMARY
+              fi
+            fi
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Quick links
+          echo "### Quick Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [View test artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "- [Coverage report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) (in artifacts)" >> $GITHUB_STEP_SUMMARY

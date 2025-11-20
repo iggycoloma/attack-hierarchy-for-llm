@@ -1,0 +1,103 @@
+{
+  "type": "bundle",
+  "id": "bundle--minimal-test-fixture",
+  "spec_version": "2.0",
+  "objects": [
+    {
+      "type": "x-mitre-tactic",
+      "id": "x-mitre-tactic--test-tactic-001",
+      "created": "2024-01-01T00:00:00.000Z",
+      "modified": "2024-01-01T00:00:00.000Z",
+      "name": "Reconnaissance",
+      "description": "The adversary is trying to gather information they can use to plan future operations.",
+      "x_mitre_shortname": "reconnaissance",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "url": "https://attack.mitre.org/tactics/TA0043",
+          "external_id": "TA0043"
+        }
+      ],
+      "x_mitre_version": "1.0",
+      "x_mitre_domains": ["enterprise-attack"]
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--test-technique-001",
+      "created": "2024-01-01T00:00:00.000Z",
+      "modified": "2024-01-01T00:00:00.000Z",
+      "name": "Active Scanning",
+      "description": "Adversaries may execute active reconnaissance scans to gather information that can be used during targeting.",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "reconnaissance"
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "url": "https://attack.mitre.org/techniques/T1595",
+          "external_id": "T1595"
+        }
+      ],
+      "x_mitre_version": "1.0",
+      "x_mitre_domains": ["enterprise-attack"],
+      "x_mitre_platforms": ["PRE"],
+      "x_mitre_detection": "Monitor for suspicious network traffic that could indicate scanning activity.",
+      "x_mitre_is_subtechnique": false
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--test-subtechnique-001",
+      "created": "2024-01-01T00:00:00.000Z",
+      "modified": "2024-01-01T00:00:00.000Z",
+      "name": "Scanning IP Blocks",
+      "description": "Adversaries may scan victim IP blocks to gather information that can be used during targeting.",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "reconnaissance"
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "url": "https://attack.mitre.org/techniques/T1595/001",
+          "external_id": "T1595.001"
+        }
+      ],
+      "x_mitre_version": "1.0",
+      "x_mitre_domains": ["enterprise-attack"],
+      "x_mitre_platforms": ["PRE"],
+      "x_mitre_detection": "Monitor for suspicious network scanning behavior targeting IP blocks.",
+      "x_mitre_is_subtechnique": true
+    },
+    {
+      "type": "course-of-action",
+      "id": "course-of-action--test-mitigation-001",
+      "created": "2024-01-01T00:00:00.000Z",
+      "modified": "2024-01-01T00:00:00.000Z",
+      "name": "Pre-compromise",
+      "description": "This category is used for any applicable mitigation activities that apply to techniques occurring before an adversary gains Initial Access.",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "url": "https://attack.mitre.org/mitigations/M1056",
+          "external_id": "M1056"
+        }
+      ],
+      "x_mitre_version": "1.0",
+      "x_mitre_domains": ["enterprise-attack"]
+    },
+    {
+      "type": "relationship",
+      "id": "relationship--test-001",
+      "created": "2024-01-01T00:00:00.000Z",
+      "modified": "2024-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--test-mitigation-001",
+      "target_ref": "attack-pattern--test-technique-001"
+    }
+  ]
+}

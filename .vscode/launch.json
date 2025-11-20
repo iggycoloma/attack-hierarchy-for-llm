@@ -1,0 +1,139 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Debug Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": true,
+      "stopOnEntry": false,
+      "presentation": {
+        "hidden": false,
+        "group": "python",
+        "order": 1
+      }
+    },
+    {
+      "name": "Pytest: Debug All Tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "-v",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "presentation": {
+        "hidden": false,
+        "group": "test",
+        "order": 1
+      }
+    },
+    {
+      "name": "Pytest: Debug Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "${file}",
+        "-v",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "presentation": {
+        "hidden": false,
+        "group": "test",
+        "order": 2
+      }
+    },
+    {
+      "name": "Pytest: Debug Unit Tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "tests/unit/",
+        "-v",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "presentation": {
+        "hidden": false,
+        "group": "test",
+        "order": 3
+      }
+    },
+    {
+      "name": "Pytest: Debug Integration Tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "tests/integration/",
+        "-v",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "presentation": {
+        "hidden": false,
+        "group": "test",
+        "order": 4
+      }
+    },
+    {
+      "name": "Pytest: Debug with Coverage",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "--cov=kolmogorov_distance",
+        "--cov-report=html",
+        "--cov-report=term",
+        "-v",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "presentation": {
+        "hidden": false,
+        "group": "test",
+        "order": 5
+      }
+    }
+  ]
+}

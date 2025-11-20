@@ -1,0 +1,86 @@
+{
+  "name": "MITRE ATT&CK Hierarchy Parser Dev Environment",
+  "image": "mcr.microsoft.com/devcontainers/python:3.13-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers-extra/features/uv:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "donjayamanne.githistory",
+        "eamodio.gitlens",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.mypy-type-checker",
+        "ms-python.pylint",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter",
+        "ms-vscode.makefile-tools",
+        "redhat.vscode-yaml",
+        "vscode-icons-team.vscode-icons"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.env.linux": {
+          "PYTHONPATH": "${containerWorkspaceFolder}",
+          "VIRTUAL_ENV": "${containerWorkspaceFolder}/.venv"
+        },
+        "editor.formatOnSave": false,
+        "workbench.iconTheme": "vscode-icons",
+        "[python]": {
+          "editor.rulers": [100],
+          "editor.formatOnSave": false
+        },
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestPath": "${containerWorkspaceFolder}/.venv/bin/pytest",
+        "git.useEditorAsCommitInput": true,
+        "git.terminalGitEditor": true,
+        "makefile.configureOnOpen": true
+      }
+    }
+  },
+  "mounts": [
+    {
+      "source": "gh-config-${devcontainerId}",
+      "target": "/home/vscode/.config/gh",
+      "type": "volume"
+    }
+  ],
+  "remoteUser": "vscode",
+  "remoteEnv": {
+    "ENVIRONMENT": "development",
+    "DEVCONTAINER": "1",
+    "UV_LINK_MODE": "copy",
+    "VIRTUAL_ENV": "/workspaces/attack-hierarchy-for-llm/.venv"
+  },
+  "onCreateCommand": {
+    "dependencies": "uv sync --extra dev"
+  },
+  "updateContentCommand": {
+    "install-deps": "uv sync --extra dev"
+  },
+  "postCreateCommand": {
+    "pre-commit": ".venv/bin/pre-commit install || echo 'Pre-commit hooks will be installed after dependencies'",
+    "gh-auth": "gh auth status 2>&1 || echo 'Authenticate with: gh auth login --insecure-storage --git-protocol ssh'",
+    "fix-home-permissions": "sudo chown -R vscode:vscode /home/vscode || true"
+  },
+  "postStartCommand": {
+    "welcome": "echo '\nMITRE ATT&CK Hierarchy Parser - Development Environment Ready\n'",
+    "venv-status": "if [ -n \"$VIRTUAL_ENV\" ]; then echo 'Virtual environment active: .venv'; else echo 'Virtual environment not active. Run: source .venv/bin/activate'; fi",
+    "quick-start": "echo '\nQuick Start:'",
+    "commands": "echo '  Run parser:     python main.py'",
+    "tests": "echo '  Run tests:      pytest  (or make test)'",
+    "quality": "echo '  Code quality:   make ci'",
+    "help": "echo '  All commands:   make help\n'"
+  },
+  "waitFor": "postStartCommand"
+}

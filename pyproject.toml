@@ -1,0 +1,191 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "attack-hierarchy-for-llm"
+version = "0.1.0"
+description = "Parse MITRE ATT&CK STIX data and generate structured Markdown optimized for LLM consumption"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Iggy Coloma", email = "iggy.coloma@gmail.com"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Topic :: Security",
+    "Topic :: Text Processing :: Markup",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+keywords = [
+    "mitre",
+    "attack",
+    "stix",
+    "threat-intelligence",
+    "cybersecurity",
+    "llm",
+    "markdown",
+]
+dependencies = [
+    "mitreattack-python>=5.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Code formatting and linting
+    "black>=25.11.0",
+    "isort>=7.0.0",
+    "pylint>=4.0.0",
+    "mypy>=1.18.2",
+
+    # Security scanning
+    "bandit>=1.9.1",
+
+    # Pre-commit hooks
+    "pre-commit>=4.4.0",
+
+    # Testing framework
+    "pytest>=9.0.0",
+    "pytest-cov>=7.0.0",
+    "pytest-xdist>=3.8.0",  # Parallel test execution
+    "pytest-html>=4.1.0",   # HTML test reports
+    "pytest-json-report>=1.5.0",  # JSON test reports for CI
+    "pytest-mock>=3.15.0",  # Enhanced mocking capabilities
+]
+
+[project.urls]
+"Homepage" = "https://github.com/iggycoloma/attack-hierarchy-for-llm"
+"Bug Reports" = "https://github.com/iggycoloma/attack-hierarchy-for-llm/issues"
+"Source" = "https://github.com/iggycoloma/attack-hierarchy-for-llm"
+"Documentation" = "https://github.com/iggycoloma/attack-hierarchy-for-llm/blob/main/README.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/attack_hierarchy"]
+
+[tool.black]
+line-length = 100
+target-version = ['py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    # directories
+    \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+src_paths = ["src/attack_hierarchy", "tests"]
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+# Per-module options
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_decorators = false
+check_untyped_defs = false
+warn_return_any = false
+warn_unused_ignores = false
+strict_equality = false
+# Allow missing imports for test utilities
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "mitreattack.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [
+    "--cov=attack_hierarchy",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-branch",
+    "--junit-xml=pytest-results.xml",  # JUnit XML for GitHub Actions
+    "--html=pytest-report.html",       # HTML report for debugging
+    "--self-contained-html",           # Embed CSS/JS in HTML report
+    "-v"
+]
+testpaths = [
+    "tests/unit",
+    "tests/integration",
+]
+python_files = [
+    "test_*.py",
+    "*_test.py"
+]
+python_classes = [
+    "Test*"
+]
+python_functions = [
+    "test_*"
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests"
+]
+
+[tool.coverage.run]
+source = ["attack_hierarchy"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+    "*/site-packages/*",
+    "*.pyx"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+precision = 2

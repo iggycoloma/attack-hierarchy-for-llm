@@ -1,0 +1,87 @@
+[MAIN]
+# Use multiple processes to speed up Pylint
+jobs=1
+
+# Pickle collected data for later comparisons
+persistent=yes
+
+[MESSAGES CONTROL]
+# Disable specific warnings globally
+disable=
+    # Development/debugging related
+    fixme,                          # TODO/FIXME comments are okay during development
+    # Logging related
+    logging-fstring-interpolation,  # f-strings in logging are fine for development
+    # Typing related
+    unsubscriptable-object,         # Handle runtime subscripting issues
+    broad-exception-caught,         # Sometimes catching Exception is appropriate
+    # Style preferences (handled by formatters)
+    line-too-long,                  # handled by black formatter
+    trailing-whitespace,            # handled by black formatter
+    missing-final-newline,          # handled by black formatter
+    # Test-specific warnings (only for test files)
+    redefined-outer-name,           # pytest fixtures commonly redefine names
+    unused-argument,                # test fixtures often unused in specific tests
+    too-many-public-methods,        # test classes naturally have many test methods
+    too-few-public-methods,         # simple test classes are fine
+    missing-class-docstring,        # test classes don't always need docstrings
+    missing-function-docstring,     # test functions are often self-documenting
+    protected-access,               # tests sometimes need to access protected members
+    import-outside-toplevel,        # tests often need conditional imports for mocking
+    attribute-defined-outside-init, # test setup can define attributes dynamically
+
+[FORMAT]
+# Maximum number of characters on a single line (matches Black formatter; explicit for Pylint reports)
+max-line-length=100
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=10
+
+# Maximum number of locals for function / method body
+max-locals=20
+
+# Maximum number of return / yield for function / method body
+max-returns=10
+
+# Maximum number of branch for function / method body
+max-branches=15
+
+# Maximum number of statements in function / method body
+max-statements=60
+
+# Maximum number of parents for a class (see R0901).
+max-parents=7
+
+# Maximum number of attributes for a class (see R0902).
+max-attributes=15
+
+# Minimum number of public methods for a class (see R0903).
+min-public-methods=1
+
+# Maximum number of public methods for a class (see R0904).
+max-public-methods=50
+
+[SIMILARITIES]
+# Minimum lines number of a similarity
+min-similarity-lines=10
+
+# Ignore comments when computing similarities
+ignore-comments=yes
+
+# Ignore docstrings when computing similarities
+ignore-docstrings=yes
+
+# Ignore imports when computing similarities
+ignore-imports=yes
+
+[VARIABLES]
+# Tells whether we should check for unused import in __init__ files
+init-import=no
+
+# A regular expression matching the name of dummy variables (i.e. expected to not be used)
+dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
+
+[EXCEPTIONS]
+# Exceptions that will emit a warning when being caught
+overgeneral-exceptions=builtins.Exception,builtins.BaseException

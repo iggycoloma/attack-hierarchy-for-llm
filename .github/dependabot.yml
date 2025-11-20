@@ -1,0 +1,82 @@
+# Dependabot configuration for automated dependency updates
+# See: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Python dependencies (pyproject.toml)
+  # Note: Using "pip" ecosystem works with UV since both read pyproject.toml
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "python"
+    # Group related updates together
+    groups:
+      testing-tools:
+        patterns:
+          - "pytest*"
+          - "coverage*"
+        update-types:
+          - "minor"
+          - "patch"
+      linting-tools:
+        patterns:
+          - "black"
+          - "isort"
+          - "pylint"
+          - "mypy"
+          - "bandit"
+        update-types:
+          - "minor"
+          - "patch"
+    # Ignore specific dependencies that should be updated manually
+    ignore:
+      # Pin Python version updates (handle manually)
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major"]
+      # Pin major updates for critical dependencies (review manually)
+      - dependency-name: "pytest"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions workflow dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "ci"
+    # Group GitHub Actions updates
+    groups:
+      actions-core:
+        patterns:
+          - "actions/*"
+        update-types:
+          - "minor"
+          - "patch"
+      actions-third-party:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "actions/*"
+        update-types:
+          - "minor"
+          - "patch"
