@@ -1,0 +1,91 @@
+{
+  // Python interpreter and environment
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+
+  // Modern Python extension configuration (Pylance for IntelliSense only)
+  // Type checking disabled in favor of MyPy extension for editor/CI consistency
+  "python.analysis.typeCheckingMode": "off",
+  "python.analysis.autoImportCompletions": true,
+
+  // Format on save (disabled - use pre-commit hooks instead)
+  "editor.formatOnSave": false,
+  "editor.formatOnType": false,
+  "editor.formatOnPaste": false,
+
+  // Default formatter for Python (reads from pyproject.toml)
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.rulers": [100],
+    "editor.wordWrap": "off",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+
+  // EditorConfig support
+  "editorconfig.generateAuto": false,
+
+  // Black formatter extension settings
+  "black-formatter.args": [],
+
+  // isort extension settings
+  "isort.args": [],
+
+  // Pylint extension settings
+  "pylint.args": ["--rcfile=${workspaceFolder}/.pylintrc"],
+  "pylint.enabled": false,
+
+  // MyPy extension settings (primary type checker)
+  "mypy-type-checker.args": [],
+  "mypy-type-checker.path": ["mypy"],
+  "mypy-type-checker.importStrategy": "fromEnvironment",
+  "mypy-type-checker.reportingScope": "workspace",
+  "mypy-type-checker.enabled": false,
+
+  // Testing configuration
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestPath": "${workspaceFolder}/.venv/bin/pytest",
+  "python.testing.pytestArgs": [
+    "-v",
+    "tests"
+  ],
+  "python.testing.autoTestDiscoverOnSaveEnabled": false,
+
+  // File associations and workspace settings
+  "files.associations": {
+    "*.pylintrc*": "ini",
+    ".coveragerc": "ini"
+  },
+
+  // Markdown settings
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.rulers": [100]
+  },
+
+  // File exclusions for better performance
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/htmlcov": true,
+    "**/*.pyc": true,
+    "**/bandit-report.json": true,
+    "**/pip-audit-report.json": true,
+    "**/security-reports": true
+  },
+
+  // Search exclusions
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/htmlcov": true,
+    "**/*.pyc": true,
+    "**/coverage.xml": true,
+    "**/bandit-report.json": true,
+    "**/pip-audit-report.json": true,
+    "**/security-reports": true
+  }
+}
