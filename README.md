@@ -84,6 +84,43 @@ python main.py --verbose
 python main.py --help
 ```
 
+### Module invocation (recommended)
+
+```bash
+# Run as a module (works after pip install)
+python -m attack_hierarchy --input tests/fixtures/enterprise-attack.json
+
+# RAG-optimized output: one file per tactic
+python -m attack_hierarchy --format by-tactic --output output/tactics/
+
+# RAG-optimized output: one file per technique
+python -m attack_hierarchy --format by-technique --output output/techniques/
+
+# Structured JSON logging (for production/observability)
+python -m attack_hierarchy --log-format json --input enterprise-attack.json
+
+# Combine options
+python -m attack_hierarchy \
+  --input tests/fixtures/enterprise-attack.json \
+  --output output/tactics/ \
+  --format by-tactic \
+  --log-format json \
+  --verbose
+```
+
+### Output Formats
+
+| Format | Description | Use Case |
+|--------|-------------|----------|
+| `single` (default) | One 2.6MB file with full hierarchy | Reading, reference |
+| `by-tactic` | 14 files, one per kill chain phase | RAG with tactic-level queries |
+| `by-technique` | 216 files, one per technique | RAG with technique-level lookups |
+
+Split formats include:
+- YAML frontmatter with metadata for filtering
+- Index file with links to all generated files
+- No duplication (each technique appears once)
+
 ## Testing
 
 ```bash
@@ -165,65 +202,49 @@ attack-hierarchy-for-llm/
 ...
 ```
 
-## What I'd Add for Production
+## Production Features
 
-**Schema Validation**:
-- Actually validate against the STIX 2.1 JSON schema instead of just hoping
-- Catch malformed data before the parser gets confused
-- Auto-detect STIX versions because who wants to specify that manually
+### Implemented
 
-**Observability & Metrics**:
-- Track how long each stage takes (so you know what to blame)
-- Data quality metrics (how many orphaned techniques? missing fields?)
-- Token count estimates for your LLM's context window budget
-- Prometheus/DataDog integration (for when you need graphs to justify your existence)
+**Observability & Metrics** (v0.2.0):
+- Structured JSON logging (`--log-format json`) for log aggregation
+- Run metrics emitted at end of each run (duration, counts, success/failure)
+- MITRE ATT&CK version tracking extracted from STIX data
 
-**RAG-Optimized Output Formats**:
+**RAG-Optimized Output Formats** (v0.2.0):
 
-Right now this spits out one giant 2.6MB file with 42,000+ lines. Great for reading, terrible for RAG because:
-- Your LLM's context window taps out way before line 42,000
-- Chunking a single file means you're slicing across semantic boundaries
-- All that duplication bloats your vector database
+The default single-file output (2.6MB, 42,000+ lines) is great for reading but terrible for RAG. Now you have options:
 
-For actual production RAG systems, you'd want multiple output modes:
-
-1. **Per-Tactic Files** (14 files): One file per kill chain phase
+1. **Per-Tactic Files** (`--format by-tactic`): 14 files, one per kill chain phase
    - Clean semantic boundaries (each file = one phase of the attack)
-   - Reasonable file sizes (~100-600 lines)
+   - YAML frontmatter with metadata for filtering
    - Perfect for "show me everything about initial access" queries
-   - Usage: `python main.py --format by-tactic`
 
-2. **Per-Technique Files** (216 files): One file per technique
-   - Maximum granularity
-   - Zero duplication (each technique appears exactly once)
+2. **Per-Technique Files** (`--format by-technique`): 216 files, one per technique
+   - Maximum granularity, zero duplication
    - Great for "what is T1595" lookups
-   - Usage: `python main.py --format by-technique`
+   - Includes subtechniques in parent file
 
-3. **Hybrid Approach** (Recommended for Real Stuff): All of the above
-   - Both tactic files AND technique files
-   - JSON indexes for cross-referencing
-   - YAML front matter on everything for metadata filtering
-   - Handles any query pattern you throw at it
-   - Usage: `python main.py --format hybrid`
-
-4. **Chunked with Metadata**: Single file, explicit chunk markers
-   - HTML-style chunk boundaries in the file
-   - Metadata tags tell your RAG pipeline where to split
-   - Preserves hierarchy without breaking semantic relationships
-   - For when you want one file but don't want to think about chunking
-
-All of these would include YAML front matter like:
+All split formats include YAML frontmatter:
 ```yaml
 ---
 id: TA0043
 type: tactic
 name: Reconnaissance
-technique_count: 10
 kill_chain_phase: reconnaissance
 ---
 ```
 
-Makes semantic search, metadata filtering, and hybrid retrieval actually work instead of just being buzzwords.
+### Still TODO
+
+**Schema Validation**:
+- Validate against STIX 2.1 JSON schema before parsing
+- Auto-detect STIX versions
+
+**Additional Observability**:
+- Token count estimates for LLM context window budgeting
+- Prometheus/DataDog metrics export
+- Data quality metrics (orphaned techniques, missing fields)
 
 ## Known Limitations
 

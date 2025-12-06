@@ -143,7 +143,7 @@ class TestMarkdownGenerator:
             subtechniques={},
         )
 
-        techniques = generator._get_techniques_for_tactic("TA0001")
+        techniques = generator.get_techniques_for_tactic("TA0001")
         assert len(techniques) == 1
         assert techniques[0].id == "T1595"
 
@@ -157,7 +157,7 @@ class TestMarkdownGenerator:
             subtechniques={"T1595.001": sample_subtechnique},
         )
 
-        subtechniques = generator._get_subtechniques_for_technique("T1595")
+        subtechniques = generator.get_subtechniques_for_technique("T1595")
         assert len(subtechniques) == 1
         assert subtechniques[0].id == "T1595.001"
 
@@ -182,7 +182,7 @@ class TestMarkdownGenerator:
         }
 
         generator = MarkdownGenerator(tactics=tactics, techniques={}, subtechniques={})
-        sorted_tactics = generator._sort_tactics()
+        sorted_tactics = generator.sort_tactics()
 
         # Reconnaissance should come first in kill chain
         assert sorted_tactics[0].id == "TA0043"

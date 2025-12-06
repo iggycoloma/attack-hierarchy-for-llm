@@ -173,7 +173,7 @@ def main() -> int:
         logger.error(f"Unexpected error: {e}")
         logger.error("")
         logger.error("This may be a bug. Please report this issue with the error above at:")
-        logger.error("  https://github.com/yourusername/attack-hierarchy-for-llm/issues")
+        logger.error("  https://github.com/iggycoloma/attack-hierarchy-for-llm/issues")
         logger.error("")
         if args.verbose:
             logger.error("Full traceback:", exc_info=True)

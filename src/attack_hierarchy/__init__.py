@@ -2,6 +2,10 @@
 
 This package extracts the MITRE ATT&CK kill chain hierarchy from STIX 2.1 format
 and renders it as structured Markdown optimized for LLM/RAG consumption.
+
+Usage:
+    python -m attack_hierarchy --input enterprise-attack.json --output output/
+    python -m attack_hierarchy --format by-tactic --log-format json
 """
 
 from attack_hierarchy.markdown_generator import MarkdownGenerator
