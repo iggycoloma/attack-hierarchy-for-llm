@@ -13,7 +13,6 @@ from mitreattack.stix20 import MitreAttackData
 
 from attack_hierarchy.models import SubTechnique, Tactic, Technique
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 

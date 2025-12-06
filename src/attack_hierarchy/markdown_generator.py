@@ -133,14 +133,14 @@ class MarkdownGenerator:
         lines.append("---")
         lines.append("")
 
-        sorted_tactics = self._sort_tactics()
+        sorted_tactics = self.sort_tactics()
 
         for tactic in sorted_tactics:
             self._add_tactic_section(lines, tactic)
 
         return "\n".join(lines)
 
-    def _sort_tactics(self) -> List[Tactic]:
+    def sort_tactics(self) -> List[Tactic]:
         """Sort tactics by kill chain order.
 
         Returns:
@@ -179,7 +179,7 @@ class MarkdownGenerator:
         lines.append("")
 
         # Find all techniques for this tactic (pre-sorted)
-        tactic_techniques = self._get_techniques_for_tactic(tactic.id)
+        tactic_techniques = self.get_techniques_for_tactic(tactic.id)
 
         if not tactic_techniques:
             logger.warning(f"No techniques found for tactic {tactic.id}")
@@ -201,10 +201,10 @@ class MarkdownGenerator:
         lines.append(technique.description)
         lines.append("")
 
-        self._add_metadata_sections(lines, technique)
+        self.add_metadata_sections(lines, technique)
 
         # Find all sub-techniques for this technique (pre-sorted)
-        technique_subtechniques = self._get_subtechniques_for_technique(technique.id)
+        technique_subtechniques = self.get_subtechniques_for_technique(technique.id)
 
         if technique_subtechniques:
             for subtechnique in technique_subtechniques:
@@ -223,9 +223,9 @@ class MarkdownGenerator:
         lines.append(subtechnique.description)
         lines.append("")
 
-        self._add_metadata_sections(lines, subtechnique)
+        self.add_metadata_sections(lines, subtechnique)
 
-    def _get_techniques_for_tactic(self, tactic_id: str) -> List[Technique]:
+    def get_techniques_for_tactic(self, tactic_id: str) -> List[Technique]:
         """Get all techniques that belong to a tactic - O(1) lookup.
 
         Args:
@@ -236,7 +236,7 @@ class MarkdownGenerator:
         """
         return self._tactic_to_techniques.get(tactic_id, [])
 
-    def _get_subtechniques_for_technique(self, technique_id: str) -> List[SubTechnique]:
+    def get_subtechniques_for_technique(self, technique_id: str) -> List[SubTechnique]:
         """Get all sub-techniques that belong to a technique - O(1) lookup.
 
         Args:
@@ -247,7 +247,7 @@ class MarkdownGenerator:
         """
         return self._technique_to_subtechniques.get(technique_id, [])
 
-    def _add_metadata_sections(self, lines: List[str], obj: Technique | SubTechnique) -> None:
+    def add_metadata_sections(self, lines: List[str], obj: Technique | SubTechnique) -> None:
         """Add metadata sections for a technique or sub-technique.
 
         Args:
